@@ -1,8 +1,8 @@
-import { pgTable, text, serial, integer, jsonb, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, json, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// User schema from the original
+// User schema (kept from original file)
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -18,70 +18,106 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
 // Subject schema
-export const subjectSchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(1, "Subject name is required"),
-  duration: z.string().or(z.number()), // Duration in minutes
-  color: z.string().optional(),
-  room: z.string().optional(),
+export const subjects = pgTable("subjects", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  teacher: text("teacher"),
+  periodsPerWeek: integer("periods_per_week").notNull(),
+  color: text("color").notNull(),
 });
 
-export type Subject = z.infer<typeof subjectSchema>;
+export const insertSubjectSchema = createInsertSchema(subjects).pick({
+  name: true,
+  teacher: true,
+  periodsPerWeek: true,
+  color: true,
+});
+
+export type InsertSubject = z.infer<typeof insertSubjectSchema>;
+export type Subject = typeof subjects.$inferSelect;
+
+// Timetable setting schema
+export const timetableSettings = pgTable("timetable_settings", {
+  id: serial("id").primaryKey(),
+  workingDays: json("working_days").notNull().$type<string[]>(),
+  startTime: text("start_time").notNull(),
+  endTime: text("end_time").notNull(),
+  periodDuration: integer("period_duration").notNull(),
+  breakTime: text("break_time").notNull(),
+  breakDuration: integer("break_duration").notNull(),
+  lunchTime: text("lunch_time").notNull(),
+  lunchDuration: integer("lunch_duration").notNull(),
+});
+
+export const insertTimetableSettingSchema = createInsertSchema(timetableSettings).pick({
+  workingDays: true,
+  startTime: true,
+  endTime: true,
+  periodDuration: true,
+  breakTime: true,
+  breakDuration: true,
+  lunchTime: true,
+  lunchDuration: true,
+});
+
+export type InsertTimetableSetting = z.infer<typeof insertTimetableSettingSchema>;
+export type TimetableSetting = typeof timetableSettings.$inferSelect;
 
 // Constraints schema
-export const constraintsSchema = z.object({
-  scheduleType: z.enum(["daily", "weekly"]),
-  startTime: z.string(),
-  endTime: z.string(),
-  lunchTime: z.string(),
-  lunchDuration: z.string().or(z.number()),
-  breakFrequency: z.enum(["hourly", "custom"]),
-  breakDuration: z.string().or(z.number()),
-  customBreaks: z.array(z.object({
-    time: z.string(),
-    duration: z.string().or(z.number()),
-  })).optional(),
+export const constraints = pgTable("constraints", {
+  id: serial("id").primaryKey(),
+  subjectId: integer("subject_id"),
+  teacherId: integer("teacher_id"),
+  avoidConsecutive: boolean("avoid_consecutive"),
+  preferMorning: boolean("prefer_morning"),
+  unavailableSlots: json("unavailable_slots").notNull().$type<{day: string, time: string}[]>(),
 });
 
-export type Constraints = z.infer<typeof constraintsSchema>;
-
-// TimeSlot schema
-export const timeSlotSchema = z.object({
-  id: z.string(),
-  startTime: z.string(),
-  endTime: z.string(),
-  day: z.number().optional(), // 0-6 for weekdays, undefined for daily
-  type: z.enum(["subject", "lunch", "break"]),
-  subjectId: z.string().optional(),
-  name: z.string(),
-  room: z.string().optional(),
-  color: z.string().optional(),
+export const insertConstraintSchema = createInsertSchema(constraints).pick({
+  subjectId: true,
+  teacherId: true,
+  avoidConsecutive: true,
+  preferMorning: true,
+  unavailableSlots: true,
 });
 
-export type TimeSlot = z.infer<typeof timeSlotSchema>;
+export type InsertConstraint = z.infer<typeof insertConstraintSchema>;
+export type Constraint = typeof constraints.$inferSelect;
 
-// Timetable schema
-export const timetableSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, "Timetable name is required"),
-  constraints: constraintsSchema,
-  subjects: z.array(subjectSchema),
-  timeSlots: z.array(timeSlotSchema),
-  createdAt: z.date().optional(),
-});
-
-export type Timetable = z.infer<typeof timetableSchema>;
-
-// Timetables storage
-export const timetables = pgTable("timetables", {
-  id: text("id").primaryKey(),
+// Generated timetable schema
+export const generatedTimetables = pgTable("generated_timetables", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  constraints: jsonb("constraints").notNull(),
-  subjects: jsonb("subjects").notNull(),
-  timeSlots: jsonb("timeSlots").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull()
+  timetable: json("timetable").notNull().$type<TimetableData>(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertTimetableSchema = createInsertSchema(timetables);
-export type InsertTimetable = z.infer<typeof insertTimetableSchema>;
-export type TimetableModel = typeof timetables.$inferSelect;
+export const insertGeneratedTimetableSchema = createInsertSchema(generatedTimetables).pick({
+  name: true,
+  timetable: true,
+});
+
+export type InsertGeneratedTimetable = z.infer<typeof insertGeneratedTimetableSchema>;
+export type GeneratedTimetable = typeof generatedTimetables.$inferSelect;
+
+// Additional types for the timetable data structure
+export type TimeSlot = {
+  start: string;
+  end: string;
+};
+
+export type TimetableEntry = {
+  subject: Subject;
+  time: TimeSlot;
+  type: 'class' | 'break' | 'lunch';
+};
+
+export type DaySchedule = {
+  day: string;
+  entries: TimetableEntry[];
+};
+
+export type TimetableData = {
+  days: DaySchedule[];
+  settings: TimetableSetting;
+};
