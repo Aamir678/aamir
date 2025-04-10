@@ -282,6 +282,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Generate time slots
     const timeSlots = generateTimeSlots(startTime, endTime, periodDuration);
     
+    // Debug log
+    console.log(`Settings: startTime=${startTime}, endTime=${endTime}, breakTime=${breakTime}, lunchTime=${lunchTime}`);
+    
     // Create days array with entries
     const days: DaySchedule[] = workingDays.map((day: string) => {
       // Initialize entries with breaks and lunch
@@ -307,27 +310,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       // Always add break
+      const breakStartTime = breakTime;
+      const breakEndTime = addMinutesToTime(breakTime, breakDuration);
+      console.log(`Adding break time: ${breakStartTime}-${breakEndTime}`);
       entries.push({
         subject: breakSubject,
         time: { 
-          start: breakTime, 
-          end: addMinutesToTime(breakTime, breakDuration) 
+          start: breakStartTime, 
+          end: breakEndTime 
         },
         type: "break"
       });
       
       // Always add lunch
+      const lunchStartTime = lunchTime;
+      const lunchEndTime = addMinutesToTime(lunchTime, lunchDuration);
+      console.log(`Adding lunch time: ${lunchStartTime}-${lunchEndTime}`);
       entries.push({
         subject: lunchSubject,
         time: { 
-          start: lunchTime, 
-          end: addMinutesToTime(lunchTime, lunchDuration) 
+          start: lunchStartTime, 
+          end: lunchEndTime 
         },
         type: "lunch"
       });
       
       // Now add subjects to the available time slots
       timeSlots.forEach(slot => {
+        // Debug log for checking overlap
+        console.log(`Checking if time slot ${slot.start}-${slot.end} overlaps with break or lunch`);
+        
         // Skip if this slot overlaps with a break or lunch
         if (
           (slot.start === breakTime || 
@@ -335,6 +347,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           (slot.start === lunchTime || 
            (slot.start < addMinutesToTime(lunchTime, lunchDuration) && slot.end > lunchTime))
         ) {
+          console.log(`Slot ${slot.start}-${slot.end} overlaps with break or lunch, skipping`);
           return;
         }
         
@@ -376,6 +389,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       currentTime = nextTime;
     }
     
+    console.log("Generated time slots:", slots.map(slot => `${slot.start}-${slot.end}`));
     return slots;
   }
 

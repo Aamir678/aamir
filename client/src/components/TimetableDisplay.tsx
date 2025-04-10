@@ -42,6 +42,24 @@ export default function TimetableDisplay({ timetable, isLoading }: TimetableProp
       );
     }
 
+    // Find break and lunch times across days
+    let breakTime = "";
+    let lunchTime = "";
+    
+    // Find the break and lunch slots first
+    timetable.days.forEach((day: any) => {
+      day.entries.forEach((entry: any) => {
+        if (entry.type === 'break') {
+          breakTime = `${entry.time.start}-${entry.time.end}`;
+          console.log("Found break time:", breakTime);
+        }
+        if (entry.type === 'lunch') {
+          lunchTime = `${entry.time.start}-${entry.time.end}`;
+          console.log("Found lunch time:", lunchTime);
+        }
+      });
+    });
+    
     // Get all unique time slots across all days, ensure they include breaks
     const allTimeSlots = Array.from(
       new Set(
@@ -51,7 +69,20 @@ export default function TimetableDisplay({ timetable, isLoading }: TimetableProp
       )
     ).sort() as string[];
     
-    console.log("Detected time slots:", allTimeSlots);
+    // Make sure breaks and lunch are included in the time slots
+    if (breakTime && !allTimeSlots.includes(breakTime)) {
+      console.log("Adding missing break time to allTimeSlots");
+      allTimeSlots.push(breakTime);
+      allTimeSlots.sort();
+    }
+    
+    if (lunchTime && !allTimeSlots.includes(lunchTime)) {
+      console.log("Adding missing lunch time to allTimeSlots");
+      allTimeSlots.push(lunchTime);
+      allTimeSlots.sort();
+    }
+    
+    console.log("Final time slots:", allTimeSlots);
     console.log("Timetable entries:", timetable.days.map((day: any) => day.entries.map((e: any) => e.type + ': ' + e.time.start + '-' + e.time.end)));
 
     return (
