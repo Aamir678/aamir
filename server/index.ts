@@ -1,10 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { MongoStorage, storage } from "./storage";
-
-// Set MongoDB environment variable if needed
-process.env.USE_MONGODB = process.env.USE_MONGODB || 'false';
 
 const app = express();
 app.use(express.json());

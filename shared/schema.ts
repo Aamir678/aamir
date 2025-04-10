@@ -20,7 +20,6 @@ export type User = typeof users.$inferSelect;
 // Subject schema
 export const subjects = pgTable("subjects", {
   id: serial("id").primaryKey(),
-  code: text("code").notNull(),
   name: text("name").notNull(),
   teacher: text("teacher"),
   periodsPerWeek: integer("periods_per_week").notNull(),
@@ -28,7 +27,6 @@ export const subjects = pgTable("subjects", {
 });
 
 export const insertSubjectSchema = createInsertSchema(subjects).pick({
-  code: true,
   name: true,
   teacher: true,
   periodsPerWeek: true,
