@@ -42,7 +42,7 @@ export default function TimetableDisplay({ timetable, isLoading }: TimetableProp
       );
     }
 
-    // Get all unique time slots across all days
+    // Get all unique time slots across all days, ensure they include breaks
     const allTimeSlots = Array.from(
       new Set(
         timetable.days.flatMap((day: any) => 
@@ -50,6 +50,9 @@ export default function TimetableDisplay({ timetable, isLoading }: TimetableProp
         )
       )
     ).sort() as string[];
+    
+    console.log("Detected time slots:", allTimeSlots);
+    console.log("Timetable entries:", timetable.days.map((day: any) => day.entries.map((e: any) => e.type + ': ' + e.time.start + '-' + e.time.end)));
 
     return (
       <div className="overflow-x-auto">

@@ -283,21 +283,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const timeSlots = generateTimeSlots(startTime, endTime, periodDuration);
     
     // Create days array with entries
-    const days: DaySchedule[] = workingDays.map(day => {
+    const days: DaySchedule[] = workingDays.map((day: string) => {
       // Initialize entries with breaks and lunch
       const entries: TimetableEntry[] = [];
       
-      // Add break time - Always add break regardless of exact time slot match
+      // Create separate objects for each special period to avoid reference issues
+      const breakSubject = { 
+        id: 0, 
+        name: "Morning Break", 
+        code: "BREAK", 
+        teacher: "", 
+        periodsPerWeek: 0, 
+        color: "#F59E0B" 
+      };
+      
+      const lunchSubject = { 
+        id: 0, 
+        name: "Lunch Break", 
+        code: "LUNCH", 
+        teacher: "", 
+        periodsPerWeek: 0, 
+        color: "#F59E0B" 
+      };
+      
+      // Always add break
       entries.push({
-        subject: { id: 0, name: "Morning Break", code: "BREAK", teacher: "", periodsPerWeek: 0, color: "#F59E0B" },
-        time: { start: breakTime, end: addMinutesToTime(breakTime, breakDuration) },
+        subject: breakSubject,
+        time: { 
+          start: breakTime, 
+          end: addMinutesToTime(breakTime, breakDuration) 
+        },
         type: "break"
       });
       
-      // Add lunch time - Always add lunch regardless of exact time slot match
+      // Always add lunch
       entries.push({
-        subject: { id: 0, name: "Lunch Break", code: "LUNCH", teacher: "", periodsPerWeek: 0, color: "#F59E0B" },
-        time: { start: lunchTime, end: addMinutesToTime(lunchTime, lunchDuration) },
+        subject: lunchSubject,
+        time: { 
+          start: lunchTime, 
+          end: addMinutesToTime(lunchTime, lunchDuration) 
+        },
         type: "lunch"
       });
       
