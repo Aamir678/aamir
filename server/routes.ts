@@ -287,25 +287,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Initialize entries with breaks and lunch
       const entries: TimetableEntry[] = [];
       
-      // Add break time
-      const breakSlot = timeSlots.find(slot => slot.start === breakTime);
-      if (breakSlot) {
-        entries.push({
-          subject: { id: 0, name: "Morning Break", teacher: "", periodsPerWeek: 0, color: "#F59E0B" },
-          time: { start: breakTime, end: addMinutesToTime(breakTime, breakDuration) },
-          type: "break"
-        });
-      }
+      // Add break time - Always add break regardless of exact time slot match
+      entries.push({
+        subject: { id: 0, name: "Morning Break", code: "BREAK", teacher: "", periodsPerWeek: 0, color: "#F59E0B" },
+        time: { start: breakTime, end: addMinutesToTime(breakTime, breakDuration) },
+        type: "break"
+      });
       
-      // Add lunch time
-      const lunchSlot = timeSlots.find(slot => slot.start === lunchTime);
-      if (lunchSlot) {
-        entries.push({
-          subject: { id: 0, name: "Lunch Break", teacher: "", periodsPerWeek: 0, color: "#F59E0B" },
-          time: { start: lunchTime, end: addMinutesToTime(lunchTime, lunchDuration) },
-          type: "lunch"
-        });
-      }
+      // Add lunch time - Always add lunch regardless of exact time slot match
+      entries.push({
+        subject: { id: 0, name: "Lunch Break", code: "LUNCH", teacher: "", periodsPerWeek: 0, color: "#F59E0B" },
+        time: { start: lunchTime, end: addMinutesToTime(lunchTime, lunchDuration) },
+        type: "lunch"
+      });
       
       // Now add subjects to the available time slots
       timeSlots.forEach(slot => {
