@@ -35,6 +35,7 @@ export default function AddSubjectDialog({
   onRefetch 
 }: AddSubjectDialogProps) {
   const { toast } = useToast();
+  const [subjectCode, setSubjectCode] = useState("");
   const [subjectName, setSubjectName] = useState("");
   const [teacherName, setTeacherName] = useState("");
   const [periodsPerWeek, setPeriodsPerWeek] = useState(5);
@@ -64,6 +65,7 @@ export default function AddSubjectDialog({
   });
 
   const resetForm = () => {
+    setSubjectCode("");
     setSubjectName("");
     setTeacherName("");
     setPeriodsPerWeek(5);
@@ -71,6 +73,15 @@ export default function AddSubjectDialog({
   };
 
   const handleAddSubject = () => {
+    if (!subjectCode.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Subject code is required",
+      });
+      return;
+    }
+
     if (!subjectName.trim()) {
       toast({
         variant: "destructive",
@@ -81,6 +92,7 @@ export default function AddSubjectDialog({
     }
 
     addSubject({
+      code: subjectCode,
       name: subjectName,
       teacher: teacherName,
       periodsPerWeek,
@@ -106,6 +118,18 @@ export default function AddSubjectDialog({
         </DialogHeader>
         
         <div className="space-y-4 py-2">
+          <div>
+            <Label htmlFor="subjectCode" className="block text-sm font-medium mb-1">Subject Code</Label>
+            <Input
+              id="subjectCode"
+              value={subjectCode}
+              onChange={(e) => setSubjectCode(e.target.value)}
+              placeholder="e.g., MATH101"
+              disabled={isPending}
+              maxLength={10}
+            />
+          </div>
+          
           <div>
             <Label htmlFor="subjectName" className="block text-sm font-medium mb-1">Subject Name</Label>
             <Input

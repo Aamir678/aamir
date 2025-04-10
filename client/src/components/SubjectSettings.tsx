@@ -17,6 +17,7 @@ import {
 
 interface Subject {
   id: number;
+  code: string;
   name: string;
   teacher: string;
   periodsPerWeek: number;
@@ -93,7 +94,9 @@ export default function SubjectSettings({ subjects, onAddSubject, onRefetch }: S
               className={`flex items-center p-3 rounded-md ${getColorClass(subject.color)}`}
             >
               <div className="flex-grow">
-                <div className="font-medium">{subject.name}</div>
+                <div className="font-medium">
+                  {subject.name} <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full text-gray-600 ml-1">{subject.code}</span>
+                </div>
                 <div className="text-sm text-gray-500">
                   {subject.teacher} • {subject.periodsPerWeek} periods per week
                 </div>
