@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { connectToDatabase } from "./db";
 
 const app = express();
 app.use(express.json());
@@ -37,6 +38,35 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize MongoDB connection if URI is provided
+  const mongoUri = process.env.MONGODB_URI;
+  let databaseConnection = null;
+  
+  if (mongoUri) {
+    try {
+      // Set a timeout for the entire database connection attempt
+      const connectionPromise = connectToDatabase();
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('MongoDB connection attempt timed out')), 6000);
+      });
+      
+      databaseConnection = await Promise.race([connectionPromise, timeoutPromise]);
+      
+      if (databaseConnection) {
+        log("MongoDB connection initialized successfully", "mongodb");
+      } else {
+        log("MongoDB connection failed, using in-memory storage", "mongodb");
+      }
+    } catch (error) {
+      log(`Failed to initialize MongoDB: ${error instanceof Error ? error.message : String(error)}`, "mongodb");
+      log("Using in-memory storage as fallback", "mongodb");
+    }
+  } else {
+    log("No MongoDB URI provided, using in-memory storage", "mongodb");
+  }
+  
+  // Continue with server setup even if MongoDB connection failed
+  // The app will fall back to in-memory storage
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

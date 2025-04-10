@@ -272,6 +272,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Timetable generation logic
+  /**
+   * Create a distribution plan for subjects across the week based on their periodsPerWeek
+   * Returns a map of subjectId -> array of position indices in the week
+   */
+  function createSubjectDistribution(subjects: Subject[], totalSlotsPerWeek: number): Record<string, number[]> {
+    const distribution: Record<string, number[]> = {};
+    
+    // Initialize available slots with all positions
+    const availableSlots = Array.from({ length: totalSlotsPerWeek }, (_, i) => i);
+    
+    // Sort subjects by periodsPerWeek in descending order to prioritize subjects with more periods
+    const sortedSubjects = [...subjects].sort((a, b) => b.periodsPerWeek - a.periodsPerWeek);
+    
+    for (const subject of sortedSubjects) {
+      const subjectId = subject.id.toString();
+      distribution[subjectId] = [];
+      
+      // Allocate slots based on periodsPerWeek
+      let periodsToAllocate = Math.min(subject.periodsPerWeek, availableSlots.length);
+      
+      // Skip if no periods to allocate
+      if (periodsToAllocate <= 0) continue;
+      
+      // Try to spread the periods evenly through the week
+      const stride = Math.floor(availableSlots.length / periodsToAllocate);
+      
+      for (let i = 0; i < periodsToAllocate; i++) {
+        // Calculate a good position: start with every "stride" position
+        const pos = i * stride < availableSlots.length ? i * stride : availableSlots.length - 1;
+        
+        const slotPos = availableSlots[pos];
+        distribution[subjectId].push(slotPos);
+        
+        // Remove allocated slot
+        availableSlots.splice(pos, 1);
+      }
+    }
+    
+    console.log("Subject distribution plan created:", distribution);
+    return distribution;
+  }
+
   function generateTimetable(
     subjects: Subject[], 
     settings: any, 
@@ -351,12 +393,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return;
         }
         
-        // Simple round-robin assignment for subjects
-        const subjectIndex = (timeSlots.indexOf(slot) + workingDays.indexOf(day)) % subjects.length;
-        const subject = subjects[subjectIndex];
+        // Get a subject that still needs periods allocated for this week
+        // Create a distribution plan based on periodsPerWeek
+        const dayIndex = workingDays.indexOf(day);
+        const slotIndex = timeSlots.indexOf(slot);
+        
+        // Create a position index for the slot in the week
+        const positionInWeek = dayIndex * timeSlots.length + slotIndex;
+        
+        // Find a subject that still needs periods
+        let selectedSubject: Subject | null = null;
+        
+        // Try to find a subject using the distribution plan
+        const subjectDistribution = createSubjectDistribution(subjects, workingDays.length * timeSlots.length);
+        
+        // Find which subject should be allocated at this position
+        for (const subjectId in subjectDistribution) {
+          const positions = subjectDistribution[subjectId];
+          if (positions.includes(positionInWeek)) {
+            selectedSubject = subjects.find(s => s.id.toString() === subjectId) || null;
+            break;
+          }
+        }
+        
+        // Fallback: use round-robin if no subject found through distribution
+        if (!selectedSubject) {
+          const subjectIndex = positionInWeek % subjects.length;
+          selectedSubject = subjects[subjectIndex];
+        }
         
         entries.push({
-          subject,
+          subject: selectedSubject,
           time: slot,
           type: "class"
         });
