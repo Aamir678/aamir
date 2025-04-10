@@ -20,14 +20,14 @@ export function generateTimetable(
     
     // Add break time
     entries.push({
-      subject: { id: 0, name: "Morning Break", teacher: "", periodsPerWeek: 0, color: "#F59E0B" },
+      subject: { id: 0, name: "Morning Break", code: "BREAK", teacher: "", periodsPerWeek: 0, color: "#F59E0B" },
       time: { start: breakTime, end: addMinutesToTime(breakTime, breakDuration) },
       type: "break"
     });
     
     // Add lunch time
     entries.push({
-      subject: { id: 0, name: "Lunch Break", teacher: "", periodsPerWeek: 0, color: "#F59E0B" },
+      subject: { id: 0, name: "Lunch Break", code: "LUNCH", teacher: "", periodsPerWeek: 0, color: "#F59E0B" },
       time: { start: lunchTime, end: addMinutesToTime(lunchTime, lunchDuration) },
       type: "lunch"
     });

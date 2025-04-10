@@ -138,7 +138,7 @@ export default function ConstraintSettings({ constraints, subjects, settings, on
 
   return (
     <div className="space-y-4">
-      <Alert variant="warning" className="mb-4 bg-amber-50 border border-amber-200 text-amber-700">
+      <Alert className="mb-4 bg-amber-50 border border-amber-200 text-amber-700">
         <AlertTriangle className="h-4 w-4" />
         <AlertDescription>
           Set specific constraints for your timetable generation, such as teacher availability and preferred time slots.

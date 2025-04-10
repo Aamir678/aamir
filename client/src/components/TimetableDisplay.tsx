@@ -49,7 +49,7 @@ export default function TimetableDisplay({ timetable, isLoading }: TimetableProp
           day.entries.map((entry: any) => `${entry.time.start}-${entry.time.end}`)
         )
       )
-    ).sort();
+    ).sort() as string[];
 
     return (
       <div className="overflow-x-auto">
@@ -94,7 +94,7 @@ export default function TimetableDisplay({ timetable, isLoading }: TimetableProp
                     
                     if (entry.type === 'break' || entry.type === 'lunch') {
                       return (
-                        <td key={`${day.day}-${timeSlot}`} className="px-4 py-3 text-sm text-amber-700 font-medium text-center" colSpan={timetable.days.length}>
+                        <td key={`${day.day}-${timeSlot}`} className="px-4 py-3 text-sm text-amber-700 font-medium">
                           <div className="flex items-center justify-center">
                             {entry.type === 'break' ? (
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
