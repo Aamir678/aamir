@@ -36,6 +36,7 @@ export default function AddSubjectDialog({
 }: AddSubjectDialogProps) {
   const { toast } = useToast();
   const [subjectName, setSubjectName] = useState("");
+  const [subjectCode, setSubjectCode] = useState("");
   const [teacherName, setTeacherName] = useState("");
   const [periodsPerWeek, setPeriodsPerWeek] = useState(5);
   const [selectedColor, setSelectedColor] = useState(SUBJECT_COLORS[0].color);
@@ -65,6 +66,7 @@ export default function AddSubjectDialog({
 
   const resetForm = () => {
     setSubjectName("");
+    setSubjectCode("");
     setTeacherName("");
     setPeriodsPerWeek(5);
     setSelectedColor(SUBJECT_COLORS[0].color);
@@ -80,8 +82,18 @@ export default function AddSubjectDialog({
       return;
     }
 
+    if (!subjectCode.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Subject code is required",
+      });
+      return;
+    }
+
     addSubject({
       name: subjectName,
+      code: subjectCode,
       teacher: teacherName,
       periodsPerWeek,
       color: selectedColor
@@ -113,6 +125,17 @@ export default function AddSubjectDialog({
               value={subjectName}
               onChange={(e) => setSubjectName(e.target.value)}
               placeholder="e.g., Mathematics"
+              disabled={isPending}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="subjectCode" className="block text-sm font-medium mb-1">Subject Code</Label>
+            <Input
+              id="subjectCode"
+              value={subjectCode}
+              onChange={(e) => setSubjectCode(e.target.value)}
+              placeholder="e.g., MATH101"
               disabled={isPending}
             />
           </div>

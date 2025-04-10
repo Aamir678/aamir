@@ -12,6 +12,7 @@ import { Clock, AlertTriangle } from "lucide-react";
 interface Subject {
   id: number;
   name: string;
+  code: string;
   teacher: string;
 }
 
@@ -198,7 +199,7 @@ export default function ConstraintSettings({ constraints, subjects, settings, on
             <SelectItem value="">Select Subject</SelectItem>
             {subjects.map(subject => (
               <SelectItem key={subject.id} value={subject.id.toString()}>
-                {subject.name}
+                {subject.name} ({subject.code})
               </SelectItem>
             ))}
           </SelectContent>

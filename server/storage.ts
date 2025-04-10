@@ -74,11 +74,11 @@ export class MemStorage implements IStorage {
   private initializeDefaultData() {
     // Add default subjects
     const defaultSubjects: InsertSubject[] = [
-      { name: "Mathematics", teacher: "Mr. Johnson", periodsPerWeek: 5, color: "#3B82F6" },
-      { name: "Physics", teacher: "Ms. Williams", periodsPerWeek: 4, color: "#10B981" },
-      { name: "English", teacher: "Mr. Davis", periodsPerWeek: 4, color: "#6366F1" },
-      { name: "Chemistry", teacher: "Ms. Thompson", periodsPerWeek: 3, color: "#8B5CF6" },
-      { name: "Biology", teacher: "Ms. Martinez", periodsPerWeek: 3, color: "#EC4899" }
+      { name: "Mathematics", code: "MATH101", teacher: "Mr. Johnson", periodsPerWeek: 5, color: "#3B82F6" },
+      { name: "Physics", code: "PHYS101", teacher: "Ms. Williams", periodsPerWeek: 4, color: "#10B981" },
+      { name: "English", code: "ENG101", teacher: "Mr. Davis", periodsPerWeek: 4, color: "#6366F1" },
+      { name: "Chemistry", code: "CHEM101", teacher: "Ms. Thompson", periodsPerWeek: 3, color: "#8B5CF6" },
+      { name: "Biology", code: "BIO101", teacher: "Ms. Martinez", periodsPerWeek: 3, color: "#EC4899" }
     ];
     
     defaultSubjects.forEach(subject => this.createSubject(subject));
